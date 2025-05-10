@@ -1,0 +1,9 @@
+FROM tandoori-1-updated-centos-6
+RUN curl -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_MINIMAL=1 sh
+RUN echo 'source ~/.ghcup/env' >> ~/.bashrc
+ENV PATH="$PATH:~/.ghcup/bin"
+RUN ghcup install cabal 3.6.2.0
+RUN curl -O https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-linux.tar.bz2
+RUN bunzip2 ghc-7*.tar.bz2
+RUN tar xf ghc-7*.tar
+RUN (cd ghc-7*; ./configure && make install)
