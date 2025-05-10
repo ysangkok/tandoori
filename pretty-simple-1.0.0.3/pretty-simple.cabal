@@ -30,7 +30,7 @@ library
   build-depends:       base >= 4.3 && < 5
                      , ansi-terminal
                      , containers
-                     , lens
+                     , lens == 3.7.6
                      , mono-traversable
                      , mtl
                      , parsec

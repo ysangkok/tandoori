@@ -66,6 +66,7 @@ Executable tandoori
                      containers,
                      mtl,
                      MaybeT,
+                     pretty-simple,
                      ghc-paths
                      
   -- Modules not exported by this package.
@@ -80,6 +81,7 @@ Executable tandoori
                      Tandoori.Typing.ClassDecl Tandoori.Typing.Ctxt Tandoori.Typing.DataType Tandoori.Typing.Error Tandoori.Typing.Infer
                      Tandoori.Typing.InstanceDecl Tandoori.Typing.Instantiate Tandoori.Typing.Monad Tandoori.Typing.MonoEnv Tandoori.Typing.Pretty
                      Tandoori.Typing.Repr Tandoori.Typing.Show Tandoori.Typing.Substitute Tandoori.Typing.Unify Tandoori.Typing.UnifyPred
+                     Tandoori.Kludge.Show
   
   -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
   -- Build-tools:         
