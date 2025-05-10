@@ -115,7 +115,7 @@ instance Ord k => IsMap [(k, v)] where
     mapFromList = id
     mapToList = id
 
-class (Container s, Element s ~ ContainerKey s) => IsSet s where
+class (Container s) => IsSet s where
     insertSet :: Element s -> s -> s
     deleteSet :: Element s -> s -> s
     singletonSet :: Element s -> s

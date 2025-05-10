@@ -19,7 +19,6 @@ ghcExtensions =
     --   "-XConstraintKinds"
     -- , "-XDataKinds"
       "-XDeriveDataTypeable"
-    , "-XDeriveGeneric"
     -- , "-XEmptyDataDecls"
     , "-XFlexibleContexts"
     -- , "-XFlexibleInstances"

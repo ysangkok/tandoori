@@ -1,6 +1,5 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -34,10 +33,10 @@ import Data.Semigroup ((<>))
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy.Builder (Builder, fromString, toLazyText)
 import Data.Typeable (Typeable)
-import GHC.Generics (Generic)
 import System.Console.ANSI
        (Color(..), ColorIntensity(..), ConsoleIntensity(..),
         ConsoleLayer(..), SGR(..), setSGRCode)
+import Data.Monoid
 
 import Text.Pretty.Simple.Internal.Output
        (NestLevel(..), Output(..), OutputType(..))
@@ -47,7 +46,7 @@ import Text.Pretty.Simple.Internal.Output
 data UseColor
   = NoColor
   | UseColor
-  deriving (Data, Eq, Generic, Read, Show, Typeable)
+  deriving (Data, Eq, Read, Show, Typeable)
 
 -- | Data-type wrapping up all the options available when rendering the list
 -- of 'Output's.
@@ -57,7 +56,7 @@ data OutputOptions = OutputOptions
   -- or 4.
   , _useColor :: UseColor
   -- ^ Whether or not to use ansi escape sequences to print colors.
-  } deriving (Data, Eq, Generic, Read, Show, Typeable)
+  } deriving (Data, Eq, Read, Show, Typeable)
 makeLenses ''OutputOptions
 
 -- | Default values for 'OutputOptions'.  '_indentAmount' defaults to 4, and
@@ -70,7 +69,7 @@ render options outputs = toLazyText $ runReader (renderOutputs outputs) options
 
 renderOutputs
   :: forall m.
-     MonadReader OutputOptions m
+     (Applicative m , MonadReader OutputOptions m)
   => [Output] -> m Builder
 renderOutputs = foldlM foldFunc "" . modificationsOutputList
   where
@@ -78,12 +77,12 @@ renderOutputs = foldlM foldFunc "" . modificationsOutputList
     foldFunc accum output = mappend accum <$> renderOutput output
 
 renderRaibowParenFor
-  :: MonadReader OutputOptions m
+  :: (Applicative m , MonadReader OutputOptions m)
   => NestLevel -> Builder -> m Builder
 renderRaibowParenFor nest string =
   sequenceFold [rainbowParen nest, pure string, colorReset]
 
-renderOutput :: MonadReader OutputOptions m => Output -> m Builder
+renderOutput :: (Applicative m , MonadReader OutputOptions m) => Output -> m Builder
 renderOutput (Output nest OutputCloseBrace) = renderRaibowParenFor nest "}"
 renderOutput (Output nest OutputCloseBracket) = renderRaibowParenFor nest "]"
 renderOutput (Output nest OutputCloseParen) = renderRaibowParenFor nest ")"
@@ -110,7 +109,7 @@ renderOutput (Output _ (OutputStringLit string)) = do
     , colorReset
     ]
 
-sequenceFold :: (Monad f, Monoid a, Traversable t) => t (f a) -> f a
+sequenceFold :: (Functor f, Monad f, Monoid a) => [f a] -> f a
 sequenceFold = fmap fold . sequence
 
 -- | A function that performs optimizations and modifications to a list of
@@ -162,21 +161,21 @@ shrinkWhitespace "" = ""
 -- High-level colors --
 -----------------------
 
-colorQuote :: MonadReader OutputOptions m => m Builder
+colorQuote :: (Applicative m, MonadReader OutputOptions m) => m Builder
 colorQuote = appendColors colorBold colorVividWhite
 
-colorString :: MonadReader OutputOptions m => m Builder
+colorString :: (Applicative m, MonadReader OutputOptions m) => m Builder
 colorString = appendColors colorBold colorVividBlue
 
-colorError :: MonadReader OutputOptions m => m Builder
+colorError :: (Applicative m, MonadReader OutputOptions m) => m Builder
 colorError = appendColors colorBold colorVividRed
 
-colorNum :: MonadReader OutputOptions m => m Builder
+colorNum :: (Applicative m, MonadReader OutputOptions m) => m Builder
 colorNum = appendColors colorBold colorVividGreen
 
 rainbowParen
   :: forall m.
-     MonadReader OutputOptions m
+     (Applicative m, MonadReader OutputOptions m)
   => NestLevel -> m Builder
 rainbowParen (NestLevel nestLevel) =
   let choicesLen = length rainbowParenChoices
@@ -197,15 +196,15 @@ canUseColor :: MonadReader OutputOptions m => m Bool
 canUseColor = do
   color <- view useColor
   case color of
-    NoColor -> pure False
-    UseColor -> pure True
+    NoColor -> return False
+    UseColor -> return True
 
 ifM :: Monad m => m Bool -> a -> a -> m a
 ifM comparisonM thenValue elseValue = do
   res <- comparisonM
   case res of
-    True -> pure thenValue
-    False -> pure elseValue
+    True -> return thenValue
+    False -> return elseValue
 
 colorBold :: MonadReader OutputOptions m => m Builder
 colorBold = ifM canUseColor (setSGRCodeBuilder [SetConsoleIntensity BoldIntensity]) ""
@@ -238,7 +237,7 @@ colorHelper :: MonadReader OutputOptions m => ColorIntensity -> Color -> m Build
 colorHelper colorIntensity color =
   ifM canUseColor (setSGRCodeBuilder [SetColor Foreground colorIntensity color]) ""
 
-appendColors :: MonadReader OutputOptions m => m Builder -> m Builder -> m Builder
+appendColors :: (Applicative m, MonadReader OutputOptions m) => m Builder -> m Builder -> m Builder
 appendColors color1 color2 = mappend <$> color1 <*> color2
 
 setSGRCodeBuilder :: [SGR] -> Builder

@@ -1,9 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -31,7 +29,6 @@ import Control.Lens.TH (makeLenses)
 import Data.Data (Data)
 import Data.String (IsString, fromString)
 import Data.Typeable (Typeable)
-import GHC.Generics (Generic)
 
 -- | Datatype representing how much something is nested.
 --
@@ -44,7 +41,7 @@ import GHC.Generics (Generic)
 -- A 'NestLevel' of 2 would mean that an 'Output' token is two levels of
 -- brackets, etc.
 newtype NestLevel = NestLevel { _unNestLevel :: Int }
-  deriving (Data, Eq, Generic, Num, Ord, Read, Show, Typeable)
+  deriving (Data, Eq, Num, Ord, Read, Show, Typeable)
 makeLenses ''NestLevel
 
 -- | These are the output tokens that we will be printing to the screen.
@@ -72,13 +69,12 @@ data OutputType
   -- of the other tokens.
   | OutputStringLit !String
   -- ^ This represents a string literal.  For instance, @\"foobar\"@.
-  deriving (Data, Eq, Generic, Read, Show, Typeable)
+  deriving (Data, Eq, Read, Show, Typeable)
 
 -- | 'IsString' (and 'fromString') should generally only be used in tests and
 -- debugging.  There is no way to represent 'OutputIndent' and
 -- 'OutputStringLit'.
 instance IsString OutputType where
-    fromString :: String -> OutputType
     fromString "}" = OutputCloseBrace
     fromString "]" = OutputCloseBracket
     fromString ")" = OutputCloseParen
@@ -94,4 +90,4 @@ instance IsString OutputType where
 data Output = Output
   { outputNestLevel :: {-# UNPACK #-} !NestLevel
   , outputOutputType :: !OutputType
-  } deriving (Data, Eq, Generic, Read, Show, Typeable)
+  } deriving (Data, Eq, Read, Show, Typeable)

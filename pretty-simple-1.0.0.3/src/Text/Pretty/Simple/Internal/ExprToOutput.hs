@@ -1,9 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -33,11 +31,10 @@ import Control.Monad (when)
 import Control.Monad.State (MonadState, execState)
 import Data.Data (Data)
 import Data.Foldable (traverse_)
-import Data.Monoid ((<>))
-import Data.Sequence (Seq)
-import Data.Sequences (fromList, intersperse, singleton)
+import Data.Monoid (mappend)
+import Data.Sequence (Seq, fromList)
+import Data.List (intersperse)
 import Data.Typeable (Typeable)
-import GHC.Generics (Generic)
 
 import Text.Pretty.Simple.Internal.Expr (CommaSeparated(..), Expr(..))
 import Text.Pretty.Simple.Internal.Output
@@ -55,14 +52,14 @@ import Text.Pretty.Simple.Internal.Output
 -- | Newtype around 'Int' to represent a line number.  After a newline, the
 -- 'LineNum' will increase by 1.
 newtype LineNum = LineNum { unLineNum :: Int }
-  deriving (Data, Eq, Generic, Num, Ord, Read, Show, Typeable)
+  deriving (Data, Eq, Num, Ord, Read, Show, Typeable)
 makeLenses ''LineNum
 
 data PrinterState = PrinterState
   { _currLine :: {-# UNPACK #-} !LineNum
   , _nestLevel :: {-# UNPACK #-} !NestLevel
   , _outputList :: !(Seq Output)
-  } deriving (Eq, Data, Generic, Show, Typeable)
+  } deriving (Eq, Data, Show, Typeable)
 makeLenses ''PrinterState
 
 -- | Smart-constructor for 'PrinterState'.
@@ -80,7 +77,7 @@ addOutput
 addOutput outputType = do
   nest <- use nestLevel
   let output = Output nest outputType
-  outputList <>= singleton output
+  outputList <>= fromList [output]
 
 addOutputs
   :: MonadState PrinterState m
@@ -91,7 +88,7 @@ addOutputs outputTypes = do
   outputList <>= outputs
 
 initPrinterState :: PrinterState
-initPrinterState = printerState 0 (-1) []
+initPrinterState = printerState 0 (-1) $ fromList []
 
 -- | Print a surrounding expression (like @\[\]@ or @\{\}@ or @\(\)@).
 --
@@ -119,21 +116,21 @@ initPrinterState = printerState 0 (-1) []
 -- >>> 1 + 1  -- TODO: Example here.
 -- 2
 putSurroundExpr
-  :: MonadState PrinterState m
+  :: (Applicative m, MonadState PrinterState m)
   => OutputType
   -> OutputType
   -> CommaSeparated [Expr] -- ^ comma separated inner expression.
   -> m ()
 putSurroundExpr startOutputType endOutputType (CommaSeparated []) = do
   nestLevel += 1
-  addOutputs [startOutputType, endOutputType]
+  addOutputs $ fromList [startOutputType, endOutputType]
   nestLevel -= 1
 putSurroundExpr startOutputType endOutputType (CommaSeparated [exprs]) = do
   nestLevel += 1
   let isExprsMultiLine = howManyLines exprs > 1
   when isExprsMultiLine $ do
       newLineAndDoIndent
-  addOutputs [startOutputType, OutputOther " "]
+  addOutputs $ fromList [startOutputType, OutputOther " "]
   traverse_ putExpression exprs
   if isExprsMultiLine
     then do
@@ -144,7 +141,7 @@ putSurroundExpr startOutputType endOutputType (CommaSeparated [exprs]) = do
 putSurroundExpr startOutputType endOutputType commaSeparated = do
   nestLevel += 1
   newLineAndDoIndent
-  addOutputs [startOutputType, OutputOther " "]
+  addOutputs $ fromList [startOutputType, OutputOther " "]
   putCommaSep commaSeparated
   newLineAndDoIndent
   addOutput endOutputType
@@ -153,7 +150,7 @@ putSurroundExpr startOutputType endOutputType commaSeparated = do
 
 putCommaSep
   :: forall m.
-     MonadState PrinterState m
+     (Applicative m , MonadState PrinterState m)
   => CommaSeparated [Expr] -> m ()
 putCommaSep (CommaSeparated expressionsList) =
   sequence_ $ intersperse putComma evaledExpressionList
@@ -163,11 +160,11 @@ putCommaSep (CommaSeparated expressionsList) =
       traverse_ putExpression <$> expressionsList
 
 putComma
-  :: MonadState PrinterState m
+  :: (Applicative m , MonadState PrinterState m)
   => m ()
 putComma = do
   newLineAndDoIndent
-  addOutputs [OutputComma, OutputOther " "]
+  addOutputs $ fromList [OutputComma, OutputOther " "]
 
 howManyLines :: [Expr] -> LineNum
 howManyLines = view currLine . runInitPrinterState
@@ -189,7 +186,7 @@ newLineAndDoIndent
   => m ()
 newLineAndDoIndent = newLine >> doIndent
 
-putExpression :: MonadState PrinterState m => Expr -> m ()
+putExpression :: (Applicative m , MonadState PrinterState m ) => Expr -> m ()
 putExpression (Brackets commaSeparated) = do
   putSurroundExpr OutputOpenBracket OutputCloseBracket commaSeparated
 putExpression (Braces commaSeparated) = do
@@ -259,4 +256,4 @@ removeEmptyList = foldl f []
   where
     f :: [[a]] -> [a] -> [[a]]
     f accum [] = accum
-    f accum a = accum <> [a]
+    f accum a = accum `mappend` [a]

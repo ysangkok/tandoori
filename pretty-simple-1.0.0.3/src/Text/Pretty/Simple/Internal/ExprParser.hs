@@ -1,6 +1,5 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -18,13 +17,7 @@ Portability : POSIX
 module Text.Pretty.Simple.Internal.ExprParser
   where
 
-#if __GLASGOW_HASKELL__ < 710
--- We don't need this import for GHC 7.10 as it exports all required functions
--- from Prelude
-import Control.Applicative
-#endif
-
-import Control.Applicative ((<|>))
+import Control.Applicative ((<|>), (<$>), pure)
 import Data.Functor.Identity (Identity)
 import Text.Parsec
        (Parsec, ParseError, between, char, many, noneOf, parserFail,

@@ -1,4 +1,3 @@
-{-# LANGUAGE DefaultSignatures    #-}
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE TypeFamilies         #-}
@@ -38,7 +37,7 @@ import           Data.Word            (Word8)
 import Data.Int (Int, Int64)
 import           GHC.Exts             (build)
 import           Prelude              (Bool (..), const, Char, flip, ($), IO, Maybe, Either,
-                                       replicate, (+), Integral, Ordering (..), compare, fromIntegral, Num)
+                                       replicate, (+), Integral, Ordering (..), compare, fromIntegral, Num, error)
 import Control.Arrow (Arrow)
 import Data.Tree (Tree)
 import Data.Sequence (Seq, ViewL, ViewR)
@@ -125,8 +124,6 @@ type instance Element (VS.Vector a) = a
 
 class MonoFunctor mofu where
     omap :: (Element mofu -> Element mofu) -> mofu -> mofu
-    default omap :: (Functor f, Element (f a) ~ a, f a ~ mofu) => (a -> a) -> f a -> f a
-    omap = fmap
 instance MonoFunctor S.ByteString where
     omap = S.map
 instance MonoFunctor L.ByteString where
@@ -135,45 +132,84 @@ instance MonoFunctor T.Text where
     omap = T.map
 instance MonoFunctor TL.Text where
     omap = TL.map
-instance MonoFunctor [a]
-instance MonoFunctor (IO a)
-instance MonoFunctor (ZipList a)
-instance MonoFunctor (Maybe a)
-instance MonoFunctor (Tree a)
-instance MonoFunctor (Seq a)
-instance MonoFunctor (ViewL a)
-instance MonoFunctor (ViewR a)
-instance MonoFunctor (IntMap a)
-instance MonoFunctor (Option a)
-instance MonoFunctor (NonEmpty a)
-instance MonoFunctor (Identity a)
-instance MonoFunctor (r -> a)
-instance MonoFunctor (Either a b)
-instance MonoFunctor (a, b)
-instance MonoFunctor (Const m a)
-instance Monad m => MonoFunctor (WrappedMonad m a)
-instance MonoFunctor (Map k v)
-instance MonoFunctor (HashMap k v)
-instance MonoFunctor (Vector a)
-instance Arrow a => MonoFunctor (WrappedArrow a b c)
-instance Functor f => MonoFunctor (MaybeApply f a)
-instance Functor f => MonoFunctor (WrappedApplicative f a)
-instance MonoFunctor (Cokleisli w a b)
-instance Functor m => MonoFunctor (MaybeT m a)
-instance Functor m => MonoFunctor (ListT m a)
-instance Functor m => MonoFunctor (IdentityT m a)
-instance Functor m => MonoFunctor (WriterT w m a)
-instance Functor m => MonoFunctor (Strict.WriterT w m a)
-instance Functor m => MonoFunctor (StateT s m a)
-instance Functor m => MonoFunctor (Strict.StateT s m a)
-instance Functor m => MonoFunctor (RWST r w s m a)
-instance Functor m => MonoFunctor (Strict.RWST r w s m a)
-instance Functor m => MonoFunctor (ReaderT r m a)
-instance Functor m => MonoFunctor (ErrorT e m a)
-instance Functor m => MonoFunctor (ContT r m a)
-instance (Functor f, Functor g) => MonoFunctor (Compose f g a)
-instance (Functor f, Functor g) => MonoFunctor (Product f g a)
-instance Functor f => MonoFunctor (Static f a b)
+instance MonoFunctor [a] where
+    omap = fmap
+instance MonoFunctor (IO a) where
+    omap = fmap
+instance MonoFunctor (ZipList a) where
+    omap = fmap
+instance MonoFunctor (Maybe a) where
+    omap = fmap
+instance MonoFunctor (Tree a) where
+    omap = fmap
+instance MonoFunctor (Seq a) where
+    omap = fmap
+instance MonoFunctor (ViewL a) where
+    omap = fmap
+instance MonoFunctor (ViewR a) where
+    omap = fmap
+instance MonoFunctor (IntMap a) where
+    omap = fmap
+instance MonoFunctor (Option a) where
+    omap = fmap
+instance MonoFunctor (NonEmpty a) where
+    omap = fmap
+instance MonoFunctor (Identity a) where
+    omap = fmap
+instance MonoFunctor (r -> a) where
+    omap = fmap
+instance MonoFunctor (Either a b) where
+    omap = fmap
+instance MonoFunctor (a, b) where
+    omap = fmap
+instance MonoFunctor (Const m a) where
+    omap = fmap
+instance Monad m => MonoFunctor (WrappedMonad m a) where
+    omap = fmap
+instance MonoFunctor (Map k v) where
+    omap = fmap
+instance MonoFunctor (HashMap k v) where
+    omap = fmap
+instance MonoFunctor (Vector a) where
+    omap = fmap
+instance Arrow a => MonoFunctor (WrappedArrow a b c) where
+    omap = fmap
+instance Functor f => MonoFunctor (MaybeApply f a) where
+    omap = fmap
+instance Functor f => MonoFunctor (WrappedApplicative f a) where
+    omap = fmap
+instance MonoFunctor (Cokleisli w a b) where
+    omap = fmap
+instance Functor m => MonoFunctor (MaybeT m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (ListT m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (IdentityT m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (WriterT w m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (Strict.WriterT w m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (StateT s m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (Strict.StateT s m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (RWST r w s m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (Strict.RWST r w s m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (ReaderT r m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (ErrorT e m a) where
+    omap = fmap
+instance Functor m => MonoFunctor (ContT r m a) where
+    omap = fmap
+instance (Functor f, Functor g) => MonoFunctor (Compose f g a) where
+    omap = fmap
+instance (Functor f, Functor g) => MonoFunctor (Product f g a) where
+    omap = fmap
+instance Functor f => MonoFunctor (Static f a b) where
+    omap = fmap
 instance U.Unbox a => MonoFunctor (U.Vector a) where
     omap = U.map
 instance VS.Storable a => MonoFunctor (VS.Vector a) where
@@ -181,16 +217,10 @@ instance VS.Storable a => MonoFunctor (VS.Vector a) where
 
 class MonoFoldable mofo where
     ofoldMap :: Monoid m => (Element mofo -> m) -> mofo -> m
-    default ofoldMap :: (t a ~ mofo, a ~ Element (t a), F.Foldable t, Monoid m) => (Element mofo -> m) -> mofo -> m
-    ofoldMap = F.foldMap
 
     ofoldr :: (Element mofo -> b -> b) -> b -> mofo -> b
-    default ofoldr :: (t a ~ mofo, a ~ Element (t a), F.Foldable t) => (Element mofo -> b -> b) -> b -> mofo -> b
-    ofoldr = F.foldr
     
     ofoldl' :: (a -> Element mofo -> a) -> a -> mofo -> a
-    default ofoldl' :: (t b ~ mofo, b ~ Element (t b), F.Foldable t) => (a -> Element mofo -> a) -> a -> mofo -> a
-    ofoldl' = F.foldl'
 
     otoList :: mofo -> [Element mofo]
     otoList t = build (\ mofo n -> ofoldr mofo n t)
@@ -267,28 +297,73 @@ instance MonoFoldable TL.Text where
     olength64 = TL.length
 instance MonoFoldable IntSet where
     ofoldMap f = ofoldr (mappend . f) mempty
-    ofoldr = IntSet.foldr
-    ofoldl' = IntSet.foldl'
+    ofoldr = error "IntSet.ofoldr"
+    ofoldl' = error "IntSet.ofoldl'"
     otoList = IntSet.toList
     onull = IntSet.null
     olength = IntSet.size
 instance MonoFoldable [a] where
     otoList = id
     {-# INLINE otoList #-}
-instance MonoFoldable (Maybe a)
-instance MonoFoldable (Tree a)
-instance MonoFoldable (Seq a)
-instance MonoFoldable (ViewL a)
-instance MonoFoldable (ViewR a)
-instance MonoFoldable (IntMap a)
-instance MonoFoldable (Option a)
-instance MonoFoldable (NonEmpty a)
-instance MonoFoldable (Identity a)
-instance MonoFoldable (Map k v)
-instance MonoFoldable (HashMap k v)
-instance MonoFoldable (Vector a)
-instance MonoFoldable (Set e)
-instance MonoFoldable (HashSet e)
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Maybe a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Tree a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Seq a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (ViewL a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (ViewR a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (IntMap a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Option a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (NonEmpty a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Identity a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Map k v) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (HashMap k v) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Vector a) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (Set e) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
+instance MonoFoldable (HashSet e) where
+    ofoldMap = F.foldMap
+    ofoldr = F.foldr
+    ofoldl' = F.foldl'
 instance U.Unbox a => MonoFoldable (U.Vector a) where
     ofoldMap f = ofoldr (mappend . f) mempty
     ofoldr = U.foldr
@@ -331,11 +406,7 @@ instance MonoFoldableMonoid TL.Text where
 
 class (MonoFunctor mot, MonoFoldable mot) => MonoTraversable mot where
     otraverse :: Applicative f => (Element mot -> f (Element mot)) -> mot -> f mot
-    default otraverse :: (Traversable t, mot ~ t a, a ~ Element mot, Applicative f) => (Element mot -> f (Element mot)) -> mot -> f mot
-    otraverse = traverse
     omapM :: Monad m => (Element mot -> m (Element mot)) -> mot -> m mot
-    default omapM :: (Traversable t, mot ~ t a, a ~ Element mot, Monad m) => (Element mot -> m (Element mot)) -> mot -> m mot
-    omapM = mapM
 instance MonoTraversable S.ByteString where
     otraverse f = fmap S.pack . traverse f . S.unpack
     omapM f = liftM S.pack . mapM f . S.unpack
@@ -348,19 +419,45 @@ instance MonoTraversable T.Text where
 instance MonoTraversable TL.Text where
     otraverse f = fmap TL.pack . traverse f . TL.unpack
     omapM f = liftM TL.pack . mapM f . TL.unpack
-instance MonoTraversable [a]
-instance MonoTraversable (Maybe a)
-instance MonoTraversable (Tree a)
-instance MonoTraversable (Seq a)
-instance MonoTraversable (ViewL a)
-instance MonoTraversable (ViewR a)
-instance MonoTraversable (IntMap a)
-instance MonoTraversable (Option a)
-instance MonoTraversable (NonEmpty a)
-instance MonoTraversable (Identity a)
-instance MonoTraversable (Map k v)
-instance MonoTraversable (HashMap k v)
-instance MonoTraversable (Vector a)
+instance MonoTraversable [a] where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (Maybe a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (Tree a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (Seq a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (ViewL a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (ViewR a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (IntMap a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (Option a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (NonEmpty a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (Identity a) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (Map k v) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (HashMap k v) where
+    otraverse = traverse
+    omapM = mapM
+instance MonoTraversable (Vector a) where
+    otraverse = traverse
+    omapM = mapM
 instance U.Unbox a => MonoTraversable (U.Vector a) where
     otraverse f = fmap U.fromList . traverse f . U.toList
     omapM = U.mapM

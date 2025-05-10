@@ -1,6 +1,5 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -26,10 +25,9 @@ import Control.Applicative
 
 import Data.Data (Data)
 import Data.Typeable (Typeable)
-import GHC.Generics (Generic)
 
 newtype CommaSeparated a = CommaSeparated { unCommaSeparated :: [a] }
-  deriving (Data, Eq, Generic, Show, Typeable)
+  deriving (Data, Eq, Show, Typeable)
 
 data Expr
   = Brackets !(CommaSeparated [Expr])
@@ -37,4 +35,4 @@ data Expr
   | Parens !(CommaSeparated [Expr])
   | StringLit !String
   | Other !String
-  deriving (Data, Eq, Generic, Show, Typeable)
+  deriving (Data, Eq, Show, Typeable)
