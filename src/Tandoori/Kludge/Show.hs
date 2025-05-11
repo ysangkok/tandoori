@@ -88,9 +88,9 @@ deriving instance Show (DerivDecl Name)
 deriving instance Show (DerivDecl Id)
 deriving instance Show (InstDecl Name)
 deriving instance Show (InstDecl Id)
---deriving instance Show (TyClDecl Name)
+deriving instance Show (TyClDecl Name)
 deriving instance Show (TyClDecl Id)
---deriving instance Show (ConDecl Name)
+deriving instance Show (ConDecl Name)
 deriving instance Show (ConDecl Id)
 deriving instance Show (HsPred Name)
 deriving instance Show (HsPred Id)
@@ -236,7 +236,5 @@ instance Show (StmtLR Name Name) where
 	show _ = "stmtlr nam nam"
 instance Show (HsBindLR a b) where
 	show _ = "hsbindlr"
-instance Show (TyClDecl Name) where
-	show _ = "tycldecl"
 instance Show (SpliceDecl Name) where
 	show _ = "splicedecl"
