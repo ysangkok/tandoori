@@ -1,0 +1,5 @@
+FROM tandoori-2-ghc-7-and-cabal
+RUN cabal update
+COPY . /tandoori
+RUN yum install -y gmp-devel
+RUN (cd /tandoori; cabal build --dependencies-only)

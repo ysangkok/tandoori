@@ -31,7 +31,6 @@ library
                      , ansi-terminal
                      , containers
                      , lens == 3.7.6
-                     , mono-traversable
                      , mtl
                      , parsec
                      , semigroups
