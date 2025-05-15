@@ -19,7 +19,7 @@ import NameSet
 instance Show a => Show (Located a) where
     show lx = "(L " ++ show (unLoc lx) ++ ")"
     
-instance Show id => (Show (HsDecl id)) where
+instance (Show id, Show (HsBind id)) => (Show (HsDecl id)) where
     show (TyClD tyClDecl) = "TyClD"
     show (InstD _) = "InstD"
     show (ValD bind) = "ValD: '" ++ (show bind) ++ "'"
@@ -34,7 +34,7 @@ deriving instance Show DocDecl
 deriving instance Show (HsBindLR Name Name)         
 deriving instance Show (HsBindLR Id Id)
 --deriving instance (Show a, Show b) => Show (StmtLR a b)
---deriving instance Show (StmtLR Name Name)
+deriving instance Show (StmtLR Name Name)
 deriving instance Show (StmtLR Id Id)
 --deriving instance Show (SpliceDecl Name)
 deriving instance Show (SpliceDecl Id)
@@ -232,9 +232,5 @@ instance Show TcSpecPrags where
 	show _ = "specprags"
 instance Show TcEvBinds where
 	show _ = "evbinds"
-instance Show (StmtLR Name Name) where
-	show _ = "stmtlr nam nam"
-instance Show (HsBindLR a b) where
-	show _ = "hsbindlr"
 instance Show (SpliceDecl Name) where
 	show _ = "splicedecl"
